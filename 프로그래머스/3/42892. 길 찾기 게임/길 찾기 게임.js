@@ -1,118 +1,75 @@
-class Queue {
-    constructor() {
-        this.front = 0;
-        this.back = -1;
-        this.qMap = new Map();
-    }
-    push(element) {
-        this.back ++
-        this.qMap.set(this.back, element);
-    }
-    popleft() {
-        const pickValue = this.qMap.get(this.front);
-        this.qMap.delete(this.front);
-        this.front ++
-        return pickValue;
-    }
-    size() {
-        return this.back - this.front + 1;
-    }
-}
-
+// 노드 클래스 정의, 좌우자식과 본인 노드 번호, 좌표를 가지고 있음.
 class Node {
-    constructor(nodeNumber, coord) {
-        this.node = nodeNumber;
+    constructor(node, coord) {
+        this.node = node;
+        this.coord = coord;
         this.left = null;
         this.right = null;
-        this.coord = coord;
     }
 }
 
-class Tree {
-    constructor(node) {
-        this.root = node
+// 클래스 외부에서 사용할 메서드(진입) : no underbar
+// 클래스 내부에서 재귀로 사용할 메서드 : underbar
+class BinaryTree {
+    constructor(rootNode) {
+        this.root = rootNode;
     }
-    insert(nd) {
-        this._insertNode(this.root, nd);
+    insert(node) {
+        this._insert(this.root, node);
     }
-    _insertNode(parent, child) {
-        if (parent.coord[0] < child.coord[0]) {
-            // 자식 x좌표가 더 크면 right
-            // 이 때 오른쪽이 있다면
-            if (parent.right) {
-                this._insertNode(parent.right, child)
+    _insert(parent, node) {
+        if (parent.coord[0] > node.coord[0]) {
+            if (!parent.left) {
+                parent.left = node
             } else {
-                parent.right = child;
+                this._insert(parent.left, node);
             }
         } else {
-            if (parent.left) {
-                this._insertNode(parent.left, child)
+            if (!parent.right) {
+                parent.right = node;
             } else {
-                parent.left = child;
+                this._insert(parent.right, node);
             }
         }
     }
-    pre() {
-        const result = [];
-        this._pre(this.root, result);
-        return result
+    preOrder() {
+        const orderList = [];
+        this._preOrder(this.root, orderList);
+        return orderList
     }
-    _pre(nd, arr) {
-        if (nd) {
-            arr.push(nd.node);
-            this._pre(nd.left, arr)
-            this._pre(nd.right, arr)
+    _preOrder(node, arr) {
+        if (node) {
+            arr.push(node.node);
+            this._preOrder(node.left, arr);
+            this._preOrder(node.right, arr);
         }
     }
-    pos() {
-        const result = [];
-        this._pos(this.root, result);
-        return result
+    posOrder() {
+        const orderList = [];
+        this._posOrder(this.root, orderList);
+        return orderList
     }
-    _pos(nd, arr) {
-        if (nd) {
-            this._pos(nd.left, arr)
-            this._pos(nd.right, arr)
-            arr.push(nd.node)
+    _posOrder(node, arr) {
+        if (node) {
+            this._posOrder(node.left, arr);
+            this._posOrder(node.right, arr);
+            arr.push(node.node);
         }
     }
 }
 
 function solution(nodeinfo) {
-    var answer = [[]];
-    if (nodeinfo.length === 1) return [[1],[1]]
-    
-    const matrix = [];
-    const nodeMap = new Map();
-    let mx = 0;
-    let rootNode = 0;
-    
-    const layer = new Set();
+    const nodeList = [];
     for (let i = 0; i < nodeinfo.length; i++) {
-        const node = new Node(i+1, nodeinfo[i])
-        matrix.push(node)
-        nodeMap.set(i+1, node);
-        if (mx < nodeinfo[i][1]) {
-            mx = nodeinfo[i][1]
-            rootNode = node;
-        }
-        layer.add(nodeinfo[i][1])
+        const classNode = new Node(i+1, nodeinfo[i]);
+        nodeList.push(classNode)
+    }
+    // y축을 기준으로 정렬한다. 맨 앞이 root
+    nodeList.sort((a,b) => b.coord[1] - a.coord[1])
+    const binary = new BinaryTree(nodeList[0])
+    for (let i = 1; i < nodeList.length; i++) {
+        binary.insert(nodeList[i])
     }
     
-    nodeMap.set(rootNode.node, rootNode);
-    
-    const sortedNodes = Array.from(nodeMap.values()).sort((a,b) => (b.coord[1] - a.coord[1]))
-    const sortedLayer = Array.from(layer).sort((a,b) => b-a)
-    let nowLayerIndex = 0;
-    const tree = new Tree(sortedNodes[0]);
-    for (let i = 1; i < sortedNodes.length; i++) {
-        tree.insert(sortedNodes[i])
-        // console.log(sortedNodes[i].coord)
-    }
-    
-    // console.log(tree)
-    // console.log('pre',tree.pre())
-    // console.log('pos',tree.pos())
-    
-    return [tree.pre(), tree.pos()]
+    return [binary.preOrder(), binary.posOrder()]
 }
