@@ -1,75 +1,77 @@
-// 노드 클래스 정의, 좌우자식과 본인 노드 번호, 좌표를 가지고 있음.
 class Node {
-    constructor(node, coord) {
-        this.node = node;
-        this.coord = coord;
+    constructor(node, x_axis) {
         this.left = null;
         this.right = null;
+        this.node = node;
+        this.x = x_axis
     }
 }
 
-// 클래스 외부에서 사용할 메서드(진입) : no underbar
-// 클래스 내부에서 재귀로 사용할 메서드 : underbar
-class BinaryTree {
-    constructor(rootNode) {
-        this.root = rootNode;
+class Tree {
+    constructor(root) {
+        this.root = root;
     }
+    
     insert(node) {
         this._insert(this.root, node);
     }
-    _insert(parent, node) {
-        if (parent.coord[0] > node.coord[0]) {
-            if (!parent.left) {
-                parent.left = node
+    _insert(parent, child) {
+        if (parent.x < child.x) {
+            if (!parent.right) {
+                parent.right = child;
             } else {
-                this._insert(parent.left, node);
+                this._insert(parent.right, child);
             }
         } else {
-            if (!parent.right) {
-                parent.right = node;
+            if (!parent.left) {
+                parent.left = child;
             } else {
-                this._insert(parent.right, node);
+                this._insert(parent.left, child);
             }
         }
     }
-    preOrder() {
-        const orderList = [];
-        this._preOrder(this.root, orderList);
-        return orderList
+    pre() {
+        const arr = [];
+        const returnValue = this._pre(this.root, arr);
+        return returnValue;
     }
-    _preOrder(node, arr) {
+    _pre(node, arr) {
         if (node) {
             arr.push(node.node);
-            this._preOrder(node.left, arr);
-            this._preOrder(node.right, arr);
+            this._pre(node.left, arr)
+            this._pre(node.right, arr)    
         }
+        return arr
     }
-    posOrder() {
-        const orderList = [];
-        this._posOrder(this.root, orderList);
-        return orderList
+    pos() {
+        const arr = [];
+        const returnValue = this._pos(this.root, arr);
+        return returnValue
     }
-    _posOrder(node, arr) {
+    _pos(node, arr) {
         if (node) {
-            this._posOrder(node.left, arr);
-            this._posOrder(node.right, arr);
-            arr.push(node.node);
+            this._pos(node.left, arr)
+            this._pos(node.right, arr)
+            arr.push(node.node)
         }
+        return arr
     }
 }
 
 function solution(nodeinfo) {
-    const nodeList = [];
-    for (let i = 0; i < nodeinfo.length; i++) {
-        const classNode = new Node(i+1, nodeinfo[i]);
-        nodeList.push(classNode)
+    const matrix = [];
+    for (let i = 1; i < nodeinfo.length + 1; i++) {
+        matrix.push([i, nodeinfo[i-1]])
     }
-    // y축을 기준으로 정렬한다. 맨 앞이 root
-    nodeList.sort((a,b) => b.coord[1] - a.coord[1])
-    const binary = new BinaryTree(nodeList[0])
-    for (let i = 1; i < nodeList.length; i++) {
-        binary.insert(nodeList[i])
-    }
+    matrix.sort((a,b) => b[1][1] - a[1][1])
     
-    return [binary.preOrder(), binary.posOrder()]
+    const root = new Node(matrix[0][0], matrix[0][1][0])
+    const tree = new Tree(root);
+    
+    
+    for (let i = 1; i < matrix.length; i++) {
+        const nodeClass = new Node(matrix[i][0], matrix[i][1][0])
+        tree.insert(nodeClass)
+    }
+    return [tree.pre(), tree.pos()]
 }
